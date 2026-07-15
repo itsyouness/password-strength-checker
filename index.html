@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Password Strength Checker</title>
+  <meta name="description" content="A real-time password strength analyzer built with vanilla HTML, CSS, and JavaScript." />
+
+  <!-- Google Fonts: JetBrains Mono for data/technical readouts, Inter for UI text -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <main class="console">
+
+    <header class="console__header">
+      <div class="console__brand">
+        <span class="console__brand-mark">&gt;_</span>
+        <div class="console__brand-text">
+          <h1 class="console__title">Password Strength Checker</h1>
+          <p class="console__subtitle">Real-time credential analysis</p>
+        </div>
+      </div>
+      <div class="console__status" id="statusLight" data-level="idle">
+        <span class="console__status-dot"></span>
+        <span class="console__status-label" id="statusLabel">STANDBY</span>
+      </div>
+    </header>
+
+    <section class="panel" aria-label="Password input">
+      <label class="panel__label" for="passwordInput">Enter a password to analyze</label>
+
+      <div class="input-row">
+        <input
+          type="password"
+          id="passwordInput"
+          class="input-row__field"
+          placeholder="Type your password..."
+          autocomplete="new-password"
+          spellcheck="false"
+          aria-describedby="strengthLabel"
+        />
+        <button
+          type="button"
+          id="toggleVisibility"
+          class="input-row__toggle"
+          aria-label="Show password"
+          aria-pressed="false"
+        >
+          <svg class="icon icon--eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <svg class="icon icon--eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" hidden>
+            <path d="M3 3l18 18"/>
+            <path d="M10.6 10.6a3 3 0 0 0 4.24 4.24"/>
+            <path d="M9.9 5.1A10.6 10.6 0 0 1 12 5c7 0 11 7 11 7a13.2 13.2 0 0 1-3.17 3.88M6.6 6.6C3.9 8.3 2 12 2 12s4 7 11 7c1.2 0 2.3-.2 3.35-.55"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Signature element: segmented signal meter, styled like a security gauge -->
+      <div class="meter" role="img" aria-label="Password strength meter">
+        <div class="meter__segments" id="meterSegments">
+          <span class="meter__segment" data-index="0"></span>
+          <span class="meter__segment" data-index="1"></span>
+          <span class="meter__segment" data-index="2"></span>
+          <span class="meter__segment" data-index="3"></span>
+          <span class="meter__segment" data-index="4"></span>
+          <span class="meter__segment" data-index="5"></span>
+        </div>
+        <div class="meter__readout">
+          <span class="meter__strength" id="strengthLabel" data-level="idle">AWAITING INPUT</span>
+          <span class="meter__score" id="scoreReadout">SCORE 0/6<span class="cursor">&#9608;</span></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel panel--checklist" aria-label="Security requirements checklist">
+      <h2 class="panel__label">Requirements</h2>
+      <ul class="checklist" id="checklist">
+        <li class="checklist__item" data-rule="length">
+          <span class="checklist__icon" aria-hidden="true"></span>
+          <span class="checklist__text">At least 8 characters</span>
+        </li>
+        <li class="checklist__item" data-rule="uppercase">
+          <span class="checklist__icon" aria-hidden="true"></span>
+          <span class="checklist__text">One uppercase letter (A&ndash;Z)</span>
+        </li>
+        <li class="checklist__item" data-rule="lowercase">
+          <span class="checklist__icon" aria-hidden="true"></span>
+          <span class="checklist__text">One lowercase letter (a&ndash;z)</span>
+        </li>
+        <li class="checklist__item" data-rule="number">
+          <span class="checklist__icon" aria-hidden="true"></span>
+          <span class="checklist__text">One number (0&ndash;9)</span>
+        </li>
+        <li class="checklist__item" data-rule="special">
+          <span class="checklist__icon" aria-hidden="true"></span>
+          <span class="checklist__text">One special character (!@#$%^&amp;*...)</span>
+        </li>
+        <li class="checklist__item" data-rule="longLength">
+          <span class="checklist__icon" aria-hidden="true"></span>
+          <span class="checklist__text">12+ characters (bonus)</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="panel panel--suggestions" id="suggestionsPanel" aria-live="polite">
+      <h2 class="panel__label">Suggestions</h2>
+      <ul class="suggestions" id="suggestionsList">
+        <li class="suggestions__item suggestions__item--placeholder">Start typing to see personalized suggestions.</li>
+      </ul>
+    </section>
+
+    <footer class="console__footer">
+      <p>Built with HTML, CSS &amp; vanilla JavaScript &mdash; no frameworks, no libraries.</p>
+    </footer>
+
+  </main>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
