@@ -15,45 +15,58 @@
  * -----------------------------------------------------------------------
  */
 
-/** @type {{id: string, label: string, bonus: boolean, test: (pw: string) => boolean}[]} */
+/** @type {{id: string, label: string, test: (pw: string) => boolean}[]} */
 const RULES = [
   {
     id: 'length',
     label: 'At least 8 characters',
-    bonus: false,
     test: (pw) => pw.length >= 8,
   },
   {
     id: 'uppercase',
     label: 'One uppercase letter',
-    bonus: false,
     test: (pw) => /[A-Z]/.test(pw),
   },
   {
     id: 'lowercase',
     label: 'One lowercase letter',
-    bonus: false,
     test: (pw) => /[a-z]/.test(pw),
   },
   {
     id: 'number',
     label: 'One number',
-    bonus: false,
     test: (pw) => /[0-9]/.test(pw),
   },
   {
     id: 'special',
     label: 'One special character',
-    bonus: false,
     test: (pw) => /[^A-Za-z0-9]/.test(pw),
   },
   {
     id: 'longLength',
     label: '12 or more characters',
-    bonus: true,
     test: (pw) => pw.length >= 12,
   },
 ];
+
+/**
+ * Blocklist of the most commonly used passwords (checked case-insensitively).
+ * A password on this list is capped at "weak" no matter how many character
+ * rules it meets — "P@ssw0rd!" ticks every box and is still one of the first
+ * guesses in any attack.
+ */
+const COMMON_PASSWORDS = new Set([
+  'password', 'password1', 'password!', 'password1!', 'p@ssw0rd', 'p@ssw0rd!',
+  'p@ssword', 'passw0rd', '123456', '12345678', '123456789', '1234567890', '123123',
+  '111111', '654321', '123321', '666666', '121212', '555555', '7777777',
+  'qwerty', 'qwerty123', 'qwertyuiop', '1q2w3e4r', '1qaz2wsx', 'abc123',
+  'admin', 'admin123', 'letmein', 'welcome', 'welcome1', 'monkey',
+  'dragon', 'football', 'baseball', 'master', 'shadow', 'sunshine',
+  'princess', 'superman', 'michael', 'jesus', 'ninja', 'mustang',
+  'trustno1', 'loveme', 'hello', 'charlie', 'donald', 'batman',
+  'soccer', 'killer', 'hunter', 'buster', 'tigger', 'pepper',
+  '123qwe', 'qwe123', '1q2w3e', 'aa123456', 'qwerty1', '123abc',
+]);
 
 const SCORE_THRESHOLDS = {
   medium: 3, // score >= 3  -> at least "medium"
@@ -62,15 +75,16 @@ const SCORE_THRESHOLDS = {
 
 /**
  * Runs every rule against a password and derives an overall strength level.
- * The 8-character minimum is treated as a hard floor: fall short of it and
- * the password is capped at "weak" no matter how many other boxes it ticks,
- * since a short password is inherently easier to brute-force.
+ * Two hard floors: under 8 characters, or on the common-password blocklist —
+ * either one caps the result at "weak" no matter how many other boxes are
+ * ticked, since short or guessable passwords fall to brute force first.
  *
  * @param {string} password
  * @returns {{
  *   results: Record<string, boolean>,
  *   score: number,
  *   maxScore: number,
+ *   isCommon: boolean,
  *   level: 'idle' | 'weak' | 'medium' | 'strong'
  * }}
  */
@@ -85,10 +99,11 @@ function evaluate(password) {
   }
 
   const maxScore = RULES.length;
+  const isCommon = password.length > 0 && COMMON_PASSWORDS.has(password.toLowerCase());
 
   let level = 'idle';
   if (password.length > 0) {
-    if (!results.length) {
+    if (isCommon || !results.length) {
       level = 'weak';
     } else if (score >= SCORE_THRESHOLDS.strong) {
       level = 'strong';
@@ -99,7 +114,7 @@ function evaluate(password) {
     }
   }
 
-  return { results, score, maxScore, level };
+  return { results, score, maxScore, isCommon, level };
 }
 
 /**
@@ -107,7 +122,7 @@ function evaluate(password) {
  * Only surfaces what's still missing — a password that already meets
  * every rule gets a single confirmation message instead of clutter.
  *
- * @param {{results: Record<string, boolean>, level: string}} analysis
+ * @param {{results: Record<string, boolean>, isCommon: boolean, level: string}} analysis
  * @param {string} password
  * @returns {{text: string, type: 'placeholder' | 'tip' | 'success'}[]}
  */
@@ -117,8 +132,9 @@ function buildSuggestions(analysis, password) {
   }
 
   const tips = [];
-  const { results } = analysis;
+  const { results, isCommon } = analysis;
 
+  if (isCommon) tips.push('This is one of the most commonly used passwords — attackers try it first. Pick something less predictable, even though it ticks the boxes above.');
   if (!results.length) tips.push('Use at least 8 characters — shorter passwords are much easier to crack.');
   if (!results.uppercase) tips.push('Add an uppercase letter (A–Z).');
   if (!results.lowercase) tips.push('Add a lowercase letter (a–z).');
@@ -143,6 +159,7 @@ const eyeIcon = toggleVisibilityBtn.querySelector('.icon--eye');
 const eyeOffIcon = toggleVisibilityBtn.querySelector('.icon--eye-off');
 
 const meterSegments = document.querySelectorAll('.meter__segment');
+const strengthMeter = document.getElementById('strengthMeter');
 const strengthLabel = document.getElementById('strengthLabel');
 const scoreReadout = document.getElementById('scoreReadout');
 const statusLight = document.getElementById('statusLight');
@@ -151,17 +168,17 @@ const checklistItems = document.querySelectorAll('.checklist__item');
 const suggestionsList = document.getElementById('suggestionsList');
 
 const LEVEL_TEXT = {
-  idle: 'AWAITING INPUT',
-  weak: 'WEAK',
-  medium: 'MEDIUM',
-  strong: 'STRONG',
+  idle: 'Awaiting input',
+  weak: 'Weak',
+  medium: 'Medium',
+  strong: 'Strong',
 };
 
 const STATUS_TEXT = {
-  idle: 'STANDBY',
-  weak: 'AT RISK',
-  medium: 'ACCEPTABLE',
-  strong: 'SECURE',
+  idle: 'Ready',
+  weak: 'Weak',
+  medium: 'Medium',
+  strong: 'Strong',
 };
 
 /**
@@ -186,7 +203,15 @@ function render(analysis, password) {
   // Strength label + score readout
   strengthLabel.textContent = LEVEL_TEXT[level];
   strengthLabel.setAttribute('data-level', level);
-  scoreReadout.innerHTML = `SCORE ${score}/${maxScore}<span class="cursor">&#9608;</span>`;
+  scoreReadout.textContent = `Score ${score}/${maxScore}`;
+
+  // Keep the meter's accessible name in sync with the visible rating
+  strengthMeter.setAttribute(
+    'aria-label',
+    level === 'idle'
+      ? 'Password strength meter: awaiting input'
+      : `Password strength meter: ${level}, score ${score} of ${maxScore}`
+  );
 
   // Status light in the header
   statusLight.setAttribute('data-level', level);

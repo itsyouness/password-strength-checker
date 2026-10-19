@@ -4,37 +4,35 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Password Strength Checker</title>
-  <meta name="description" content="A real-time password strength analyzer built with vanilla HTML, CSS, and JavaScript." />
+  <meta name="description" content="A real-time password strength analyzer built with vanilla HTML, CSS, and JavaScript. Everything runs in your browser — nothing you type leaves the page." />
 
-  <!-- Google Fonts: JetBrains Mono for data/technical readouts, Inter for UI text -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23141821'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='15' font-weight='bold' fill='%234fd1c5' text-anchor='middle'%3E%3E_%3C/text%3E%3C/svg%3E" />
+
+  <!-- Google Fonts: Space Grotesk for UI type, JetBrains Mono for data readouts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
-  <div class="scanlines" aria-hidden="true"></div>
+  <main class="card">
 
-  <main class="console">
-
-    <header class="console__header">
-      <div class="console__brand">
-        <span class="console__brand-mark">&gt;_</span>
-        <div class="console__brand-text">
-          <h1 class="console__title">Password Strength Checker</h1>
-          <p class="console__subtitle">Real-time credential analysis</p>
-        </div>
+    <header class="card__header">
+      <div>
+        <p class="card__kicker">Security tool</p>
+        <h1 class="card__title">Password Strength Checker</h1>
+        <p class="card__subtitle">See how your password holds up, as you type.</p>
       </div>
-      <div class="console__status" id="statusLight" data-level="idle">
-        <span class="console__status-dot"></span>
-        <span class="console__status-label" id="statusLabel">STANDBY</span>
+      <div class="card__status" id="statusLight" data-level="idle">
+        <span class="card__status-dot"></span>
+        <span class="card__status-label" id="statusLabel">Ready</span>
       </div>
     </header>
 
-    <section class="panel" aria-label="Password input">
-      <label class="panel__label" for="passwordInput">Enter a password to analyze</label>
+    <section class="section" aria-label="Password input">
+      <label class="section__label" for="passwordInput">Enter a password to analyze</label>
 
       <div class="input-row">
         <input
@@ -65,8 +63,7 @@
         </button>
       </div>
 
-      <!-- Signature element: segmented signal meter, styled like a security gauge -->
-      <div class="meter" role="img" aria-label="Password strength meter">
+      <div class="meter" id="strengthMeter" role="img" aria-label="Password strength meter: awaiting input">
         <div class="meter__segments" id="meterSegments">
           <span class="meter__segment" data-index="0"></span>
           <span class="meter__segment" data-index="1"></span>
@@ -76,14 +73,14 @@
           <span class="meter__segment" data-index="5"></span>
         </div>
         <div class="meter__readout">
-          <span class="meter__strength" id="strengthLabel" data-level="idle">AWAITING INPUT</span>
-          <span class="meter__score" id="scoreReadout">SCORE 0/6<span class="cursor">&#9608;</span></span>
+          <span class="meter__strength" id="strengthLabel" data-level="idle">Awaiting input</span>
+          <span class="meter__score" id="scoreReadout">Score 0/6</span>
         </div>
       </div>
     </section>
 
-    <section class="panel panel--checklist" aria-label="Security requirements checklist">
-      <h2 class="panel__label">Requirements</h2>
+    <section class="section" aria-label="Security requirements checklist">
+      <h2 class="section__label">Requirements</h2>
       <ul class="checklist" id="checklist">
         <li class="checklist__item" data-rule="length">
           <span class="checklist__icon" aria-hidden="true"></span>
@@ -107,20 +104,21 @@
         </li>
         <li class="checklist__item" data-rule="longLength">
           <span class="checklist__icon" aria-hidden="true"></span>
-          <span class="checklist__text">12+ characters (bonus)</span>
+          <span class="checklist__text">12+ characters for extra strength</span>
         </li>
       </ul>
     </section>
 
-    <section class="panel panel--suggestions" id="suggestionsPanel" aria-live="polite">
-      <h2 class="panel__label">Suggestions</h2>
+    <section class="section" id="suggestionsPanel" aria-live="polite" aria-label="Suggestions">
+      <h2 class="section__label">Suggestions</h2>
       <ul class="suggestions" id="suggestionsList">
         <li class="suggestions__item suggestions__item--placeholder">Start typing to see personalized suggestions.</li>
       </ul>
     </section>
 
-    <footer class="console__footer">
-      <p>Built with HTML, CSS &amp; vanilla JavaScript &mdash; no frameworks, no libraries.</p>
+    <footer class="card__footer">
+      <p class="privacy-note">Runs entirely in your browser &mdash; nothing you type ever leaves this page.</p>
+      <p>Built with HTML, CSS and vanilla JavaScript.</p>
     </footer>
 
   </main>
