@@ -2,10 +2,9 @@
 
 A real-time password strength analyzer built with plain HTML, CSS, and JavaScript — no frameworks, no build tools, no dependencies. Type a password and get instant feedback: a strength rating, a segmented strength meter, a live requirements checklist, and specific suggestions for improvement.
 
-**[Live Demo](https://itsyouness.github.io/password-strength-checker/)** *(will go live once you enable GitHub Pages — see "Deploying it" below)*
+**[Live Demo](https://itsyouness.github.io/password-strength-checker/)**
 
 ![Password Strength Checker screenshot](screenshot.png)
-*(add a screenshot of the running app here)*
 
 ---
 
@@ -21,6 +20,8 @@ Most "password strength" widgets are a black box: you type, a bar changes color,
 - **Requirements checklist** — each rule ticks off individually as it's satisfied.
 - **Show/hide password** toggle with proper `aria-pressed` state for accessibility.
 - **Contextual suggestions** — only tells you what's *actually* missing, and confirms once everything is met.
+- **Common-password detection** — passwords like `P@ssw0rd!` are capped at Weak no matter how many rules they meet.
+- **Private by design** — everything runs locally in your browser; your password is never sent anywhere.
 - **Fully responsive**, keyboard-accessible, and respects `prefers-reduced-motion`.
 
 ## How scoring works
@@ -43,6 +44,8 @@ Each rule met adds one point to the score (0–6 total). The overall rating is:
 - **5–6 points → Strong**
 
 A password shorter than 8 characters is always capped at **Weak**, regardless of how many other rules it satisfies — length is the single biggest factor in resisting brute-force attacks, so the app treats it as a floor rather than just one point among several.
+
+A password on the common-password blocklist (e.g. `P@ssw0rd!`, `qwerty123`) is also always capped at **Weak** — attackers try those first, no matter how complex they look.
 
 This logic lives in a single pure function, `evaluate(password)`, in `js/script.js`. It takes a string and returns a score/level object — it doesn't touch the DOM at all, which makes it easy to test on its own or reuse in a different UI later.
 
@@ -82,14 +85,9 @@ npx serve .
 python3 -m http.server 8000
 ```
 
-## Deploying it (for the live demo link above)
+## Live demo
 
-The easiest option is GitHub Pages:
-
-1. Push this repo to GitHub.
-2. Go to **Settings → Pages**.
-3. Under "Build and deployment", set **Source** to `Deploy from a branch`, pick `main` and `/ (root)`.
-4. Your site will be live at `https://itsyouness.github.io/password-strength-checker/`.
+Hosted with GitHub Pages at `https://itsyouness.github.io/password-strength-checker/` — to enable it: **Settings → Pages → Deploy from a branch**, pick `main` and `/ (root)`.
 
 ## What I practiced building this
 
@@ -101,7 +99,6 @@ The easiest option is GitHub Pages:
 ## Possible extensions
 
 - Add a "time to crack" estimate using entropy calculations.
-- Check against a list of common leaked passwords.
 - Add unit tests for `evaluate()` with a small test runner.
 - Persist a dark/light theme toggle.
 
